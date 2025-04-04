@@ -1,0 +1,56 @@
+-- by nome698 for lsar
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = char:WaitForChild("HumanoidRootPart")
+
+-- Criar a GUI
+local playerGui = player:WaitForChild("PlayerGui")
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = playerGui
+
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 200, 0, 50)
+button.Position = UDim2.new(0.5, -100, 0.8, 0)
+button.Text = "Ativar TPS"
+button.Parent = screenGui
+
+-- Pegando a peça "TPS" no Workspace
+local TPS = workspace:FindFirstChild("TPS")
+if not TPS then
+	warn("A peça 'TPS' não foi encontrada no Workspace!")
+	return
+end
+
+-- Variável para ativar/desativar o modo TPS
+local tpsMode = false
+
+-- Função para ativar/desativar o TPS Mode
+button.Activated:Connect(function()
+	tpsMode = not tpsMode
+	button.Text = tpsMode and "Desativar TPS" or "Ativar TPS"
+
+	if tpsMode then
+		-- Prender jogador à TPS
+		humanoidRootPart.Anchored = true
+		humanoidRootPart.CFrame = TPS.CFrame
+	else
+		-- Liberar jogador
+		humanoidRootPart.Anchored = false
+	end
+end)
+
+-- Atualizar posição da TPS conforme a câmera
+RunService.RenderStepped:Connect(function()
+	if tpsMode then
+		local camera = workspace.CurrentCamera
+		local direction = camera.CFrame.LookVector
+		local newPosition = humanoidRootPart.Position + (direction * 5)
+		TPS.Position = newPosition
+		humanoidRootPart.CFrame = TPS.CFrame
+	end
+end)
